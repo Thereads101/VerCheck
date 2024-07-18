@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OAuth Callback</title>
     <script>
-        let authCode = '';
-
-        // Extract query parameters from the URL
+        // Extract the code from the URL parameters
         function getQueryParams() {
             const params = {};
             window.location.search.substring(1).split("&").forEach(function(pair) {
@@ -17,10 +15,12 @@
             return params;
         }
 
-        // Exchange authorization code for access token
-        async function exchangeCodeForToken(code, clientId, clientSecret) {
+        // Exchange the authorization code for an access token
+        async function exchangeCodeForToken(code) {
+            const clientId = 'g3-tgObtRA4uAxz8RdTt3g';
+            const clientSecret = 'Z4ZQS4Dmu7tvrzRIf0lAHt0GeCz37Q';
+            const redirectUri = 'https://thereads101.github.io/VerCheck/callback.html';
             const tokenUrl = 'https://www.reddit.com/api/v1/access_token';
-            const redirectUri = 'https://<username>.github.io/<repository-name>/callback.html';
 
             const response = await fetch(tokenUrl, {
                 method: 'POST',
@@ -33,8 +33,7 @@
 
             const data = await response.json();
             if (response.ok) {
-                document.getElementById('output').textContent = 'Access token received. You may now close this page.';
-                document.getElementById('token').textContent = `Access Token: ${data.access_token}`;
+                document.getElementById('output').textContent = `Access token: ${data.access_token}`;
             } else {
                 document.getElementById('output').textContent = `Error: ${data.error}`;
             }
@@ -44,32 +43,16 @@
         window.onload = function() {
             const params = getQueryParams();
             const code = params['code'];
-            authCode = code;
             if (code) {
-                document.getElementById('output').textContent = 'Authorization code received. Please enter the client secret to continue.';
-                document.getElementById('auth-code').textContent = `Authorization Code: ${code}`;
-                document.getElementById('client-secret-form').style.display = 'block';
+                exchangeCodeForToken(code);
             } else {
                 document.getElementById('output').textContent = 'No authorization code found.';
             }
         };
-
-        function submitClientSecret() {
-            const clientId = 'YOUR_CLIENT_ID';  // Update with your client ID
-            const clientSecret = document.getElementById('client-secret').value;
-            exchangeCodeForToken(authCode, clientId, clientSecret);
-        }
     </script>
 </head>
 <body>
     <h1>OAuth Callback</h1>
     <div id="output">Waiting for authorization code...</div>
-    <div id="auth-code"></div>
-    <div id="client-secret-form" style="display: none;">
-        <label for="client-secret">Enter Client Secret:</label>
-        <input type="password" id="client-secret" />
-        <button onclick="submitClientSecret()">Submit</button>
-    </div>
-    <div id="token"></div>
 </body>
 </html>
