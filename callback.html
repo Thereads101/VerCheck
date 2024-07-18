@@ -1,1 +1,58 @@
-<h1>':)'</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback</title>
+    <script>
+        // Extract the code from the URL parameters
+        function getQueryParams() {
+            const params = {};
+            window.location.search.substring(1).split("&").forEach(function(pair) {
+                const [key, value] = pair.split("=");
+                params[decodeURIComponent(key)] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        // Exchange the authorization code for an access token
+        async function exchangeCodeForToken(code) {
+            const clientId = 'YOUR_CLIENT_ID';
+            const clientSecret = 'YOUR_CLIENT_SECRET';
+            const redirectUri = 'https://yourusername.github.io/repository-name/callback.html';
+            const tokenUrl = 'https://www.reddit.com/api/v1/access_token';
+
+            const response = await fetch(tokenUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}`
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('output').textContent = `Access token: ${data.access_token}`;
+            } else {
+                document.getElementById('output').textContent = `Error: ${data.error}`;
+            }
+        }
+
+        // Handle the OAuth callback
+        window.onload = function() {
+            const params = getQueryParams();
+            const code = params['code'];
+            if (code) {
+                exchangeCodeForToken(code);
+            } else {
+                document.getElementById('output').textContent = 'No authorization code found.';
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>OAuth Callback</h1>
+    <div id="output">Waiting for authorization code...</div>
+</body>
+</html>
